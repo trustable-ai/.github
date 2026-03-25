@@ -12,7 +12,7 @@ Trustable uses private AI models that run in the cloud but can also be executed 
 
 Please open an issue on our support repository:
 
-https://github.com/trustable-ai/trustable-support/issues
+https://github.com/trustable-ai/.github/issues
 
 When reporting a bug, include the following to help us resolve it quickly:
 
@@ -21,7 +21,6 @@ When reporting a bug, include the following to help us resolve it quickly:
 - The output of `ops trustable logs` (if applicable)
 - Your operating system and version
 
-## How do I view the logs?
 
 To view the Trustable application logs, run:
 
