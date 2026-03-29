@@ -50,3 +50,48 @@ ops trustable uninstall
 ```
 
 This will stop all running services and remove the installed components.
+
+
+## I cannot ensure prerequisites
+
+If you get errors in prerequisites (tipically on windows) you will get something like this:
+
+```
+ops trustable setup
+ensuring prerequisite 7zz 2407
+error in prereq 7zz: failed to download 7zz version 2407
+ensuring prerequisite rg 14.1.0
+error in prereq rg: failed to download rg version 14.1.0
+ensuring prerequisite zip 3.0-1
+error in prereq zip: failed to download zip version 3.0-1
+ensuring prerequisite coreutils 0.0.27
+error in prereq coreutils: failed to download coreutils version 0.0.27
+ensuring prerequisite bun 1.2.5
+error in prereq bun: failed to download bun version 1.2.5
+ensuring prerequisite k3sup 0.13.6
+error in prereq k3sup: failed to download k3sup version 0.13.6
+ensuring prerequisite uv 0.7.19
+error in prereq uv: failed to download uv version 0.7.19
+ensuring prerequisite helm 3.18.0
+error in prereq helm: failed to download helm version 3.18.0
+ensuring prerequisite kubectl 1.33.1
+error in prereq kubectl: failed to download kubectl version 1.33.1
+ensuring prerequisite kind 0.30.0
+error in prereq kind: failed to download kind version 0.30.0
+ensuring prerequisite yq 4.47.1
+error in prereq yq: failed to download yq version 4.47.1
+"coreutils": executable file not found in $PATH
+ops: Failed to run task "setup": exit status 127
+error: ops: Failed to run task "setup": exit status 127
+```
+
+Verify the problem trying a direct download:
+
+```
+curl.exe -o kubectl.exe -L https://dl.k8s.io/release/v1.33.1/bin/windows/amd64/kubectl.exe
+```
+
+You need to disable (temporarily) any antivirus that will block downloads of executables.
+
+
+
