@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-IMAGE=ghcr.io/trustable-ai/trustable-app:trustable_v0.3.5_26.134.1644
+IMAGE=ghcr.io/trustable-ai/trustable-app:trustable_v0.3.5_26.134.1733
 NAMESPACE=nuvolaris
 STATEFULSET=trustable
 CONTAINER=trustable
