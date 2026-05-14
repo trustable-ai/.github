@@ -11,7 +11,8 @@ CONTAINER=trustable
 # the app container; nginx keeps its current image.
 sudo k3s kubectl -n "$NAMESPACE" set image "statefulset/$STATEFULSET" \
     "$CONTAINER=$IMAGE"
-sudo rm /home/node/workspace/trustable.json
+
+sudo rm -f /home/node/workspace/trustable.json
 sudo k3s kubectl -n "$NAMESPACE" rollout status "statefulset/$STATEFULSET"
 
 # notify
