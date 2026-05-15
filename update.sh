@@ -12,7 +12,7 @@ CONTAINER=trustable
 sudo k3s kubectl -n "$NAMESPACE" set image "statefulset/$STATEFULSET" \
     "$CONTAINER=$IMAGE"
 
-sudo rm -f /home/node/workspace/trustable.json
+sudo rm -f /home/trustable/workspace/trustable.json 2>/dev/null
 sudo k3s kubectl -n "$NAMESPACE" rollout status "statefulset/$STATEFULSET"
 
 # notify
