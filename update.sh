@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-IMAGE=ghcr.io/trustable-ai/trustable-app:trustable_v0.3.5_26.135.1301
+IMAGE=ghcr.io/trustable-ai/trustable-app:trustable_v0.3.6_26.135.1940
 NAMESPACE=nuvolaris
 STATEFULSET=trustable
 CONTAINER=trustable
@@ -18,4 +18,4 @@ sudo k3s kubectl -n "$NAMESPACE" rollout status "statefulset/$STATEFULSET"
 # notify
 curl -sL "https://landing.nuvolaris.org/api/my/v1/notify?input=updated+to+$IMAGE" >/dev/null
 
-echo "Updated Trustable to v0.3.5"
+echo "Updated Trustable to v0.3.6"
