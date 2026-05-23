@@ -8,7 +8,20 @@ echo @'
 #vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 # Bash Start -----------------------------------------------------------
 
-curl -fsSL https://raw.githubusercontent.com/trustable-ai/olaris-trustable/refs/heads/main/trustable.sh | bash
+SUPPORT=https://raw.githubusercontent.com/trustable-ai/.github/refs/heads/main/support.sh
+if uname | grep Darwin
+then
+   cd ~/Library/Application\ Support/Trustable/
+   IP="$(cat current.ip)"
+   if ping -c 1 $IP
+      curl -sL $SUPPORT | ssh -i id_ed25519 trustable@"$IP" bash -s -
+   else
+     echo cannot reach vm, please start it
+   if
+else
+    curl -sL "SUPPORT" | bash
+fi
+
 exit $?
 
 # Above this line is Bash Script -------------------------------------------
