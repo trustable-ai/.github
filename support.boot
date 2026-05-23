@@ -31,8 +31,15 @@ echo > /dev/null <<"out-null" ###
 #vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 # Below this line is Powershell Script -------------------------------------
 
-irm https://raw.githubusercontent.com/trustable-ai/olaris-trustable/refs/heads/main/trustable.ps1 | iex
-return
+[Console]::OutputEncoding = [System.Text.Encoding]::Unicode
+$distro = wsl.exe --list --quiet |
+    Where-Object { $_ -like "Trustable*" } |
+    Sort-Object -Descending |
+    Select-Object -First 1
+
+$SUPPORT= "https://raw.githubusercontent.com/trustable-ai/.github/refs/heads/main/support.sh"
+
+wsl -d $distro bash -c "curl -sL $SUPPORT | sudo bash"
 
 # Powershell End -----------------------------------------------------------
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
