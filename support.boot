@@ -17,7 +17,7 @@ then
       curl -sL $SUPPORT | ssh -i id_ed25519 trustable@"$IP" bash -s -
    else
      echo cannot reach vm, please start it
-   if
+   fi
 else
     curl -sL "SUPPORT" | bash
 fi
