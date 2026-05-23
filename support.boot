@@ -14,9 +14,8 @@ then
    cd ~/Library/Application\ Support/Trustable/
    IP="$(cat current.ip)"
    if ping -c 1 $IP
-      curl -sL $SUPPORT | ssh -i id_ed25519 trustable@"$IP" bash -s -
-   else
-     echo cannot reach vm, please start it
+   then curl -sL $SUPPORT | ssh -i id_ed25519 trustable@"$IP" bash -s -
+   else echo cannot reach vm, please start it
    fi
 else
     curl -sL "SUPPORT" | bash
