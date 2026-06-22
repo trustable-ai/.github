@@ -1,21 +1,42 @@
 #!/bin/bash
 set -euo pipefail
 
-IMAGE=ghcr.io/trustable-ai/trustable-app:trustable_v0.3.6_26.135.1940
+CURRENT=trustable_v0.3.10_26.173.1305
+IMAGE=ghcr.io/trustable-ai/trustable-app:$CURRENT
 NAMESPACE=nuvolaris
 STATEFULSET=trustable
 CONTAINER=trustable
+NOTIFY="https://landing.nuvolaris.org/api/my/v1/notify?input="
 
-# The StatefulSet has two containers — `trustable` (the app) and
-# `reverse-proxy` (nginx, see olaris-bestia/trustable/sts.yaml). Patch only
-# the app container; nginx keeps its current image.
-sudo k3s kubectl -n "$NAMESPACE" set image "statefulset/$STATEFULSET" \
-    "$CONTAINER=$IMAGE"
+cd /tmp
+sudo k3s kubectl -n nuvolaris get sts/trustable -ojson >$$-1
+jq -r '.spec.template.spec.containers[].image' <$$-1 >$$-2
+RUNNING="$(awk -F: '/trustable/{print $NF}' <$$-2)"
+VERSION="$(awk -F_ '/trustable/ {print $2 }'  <$$-2)"
+TAG="$(awk -F_ '/trustable/ {print $3 }'  <$$-2)"
+rm -f "$$"-*
+echo Running: $RUNNING $VERSION $TAG
+echo Current: $CURRENT
 
-sudo rm -f /home/trustable/workspace/trustable.json 2>/dev/null
-sudo k3s kubectl -n "$NAMESPACE" rollout status "statefulset/$STATEFULSET"
+case "$VERSION" in
+    (v0.3.6|v0.3.7|v0.3.8)
+        echo Version is end of life and no more updated.
+        echo Download a new installer from https://download2.trustable.it
+        curl -sL "${NOTIFY}end-of-life+$VERSION+$TAG" >/dev/null
+    ;;
+    (v0.3.9|v0.3.10)
+        if [[ "$RUNNING" == "$CURRENT" ]]
+        then echo "You are running the latest version available"
+                  curl -sL "${NOTIFY}up-to-date+$CURRENT" >/dev/null
+        else echo "Updating"
+             sudo k3s kubectl -n "$NAMESPACE" set image "statefulset/$STATEFULSET" "$CONTAINER=$IMAGE"
+             sudo k3s kubectl -n "$NAMESPACE" rollout status "statefulset/$STATEFULSET"
+             curl -sL "${NOTIFY}$RUNNING+to+$CURRENT" >/dev/null
+        fi
+    ;;
+    (*)
+        echo "Unknown version. This should not happen."
+        curl -sL "${NOTIFY}unknown+$RUNNING" >/dev/null
+    ;;
+esac
 
-# notify
-curl -sL "https://landing.nuvolaris.org/api/my/v1/notify?input=updated+to+$IMAGE" >/dev/null
-
-echo "Updated Trustable to v0.3.6"
