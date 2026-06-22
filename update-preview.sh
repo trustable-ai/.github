@@ -9,12 +9,11 @@ CONTAINER=trustable
 NOTIFY="https://landing.nuvolaris.org/api/my/v1/notify?input="
 
 cd /tmp
-sudo k3s kubectl -n nuvolaris get sts/trustable -ojson >$$-1
-jq -r '.spec.template.spec.containers[].image' <$$-1 >$$-2
-RUNNING="$(awk -F: '/trustable/{print $NF}' <$$-2)"
-VERSION="$(awk -F_ '/trustable/ {print $2 }'  <$$-2)"
-TAG="$(awk -F_ '/trustable/ {print $3 }'  <$$-2)"
-rm -f "$$"-*
+sudo k3s kubectl -n nuvolaris get sts/trustable -ojsonpath='{.spec.template.spec.containers[*].image}' >/tmp/img$$
+RUNNING="$(awk -F: '/trustable/{print $NF}' </tmp/img$$)"
+VERSION="$(awk -F_ '/trustable/ {print $2 }'  </tmp/img$$)"
+TAG="$(awk -F_ '/trustable/ {print $3 }'  </tmp/img$$)"
+rm -f /tmp/img$$
 echo Running: $RUNNING $VERSION $TAG
 echo Current: $CURRENT
 
