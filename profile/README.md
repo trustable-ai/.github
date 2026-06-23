@@ -176,3 +176,14 @@ Alternatively, remove both the program and its data with:
 ```sh
 apt purge trustable
 ```
+
+# How can I make a template compatible with Trustable?
+
+To use trustable the absolute minimum is a  need a folder including two folders:
+
+- `web` for the static frontend
+- `packages` for the functions
+
+This is the absolute minimum, with `web` only including static html and packages stor
+
+Also you need a `package.json` including
