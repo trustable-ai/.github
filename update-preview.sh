@@ -4,7 +4,7 @@ sudo apt-get update && sudo apt-get -y install jq curl
 TOKEN=$(curl -s "https://ghcr.io/token?scope=repository:trustable-ai/trustable-app:pull&service=ghcr.io" | jq -r '.token')
 curl -s -H "Authorization: Bearer $TOKEN" "https://ghcr.io/v2/trustable-ai/trustable-app/tags/list" |\
 jq -r '.tags[] | select(startswith("trustable_"))' | awk -F_ '{ print $3 " " $0 }' | sort -r >/tmp/releases
-CURRENT="$(head -1 _releases | awk ' {print $2}' )"
+CURRENT="$(head -1 /tmp/releases | awk ' {print $2}' )"
 
 IMAGE=ghcr.io/trustable-ai/trustable-app:$CURRENT
 NAMESPACE=nuvolaris
