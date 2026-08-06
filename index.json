@@ -1,2 +1,23 @@
 {
-}  
+  "generated": "2026-08-06T07:35:04Z",
+  "starters": [
+    {
+      "name": "truchat",
+      "repo": "trustable-ai/truchat",
+      "templates": "trustable-ai/templates",
+      "description": "AI chat UI with RAG"
+    },
+    {
+      "name": "truingest",
+      "repo": "trustable-ai/truingest",
+      "templates": "trustable-ai/templates",
+      "description": "ingest documents for rag"
+    },
+    {
+      "name": "trureact",
+      "repo": "trustable-ai/trureact",
+      "templates": "trustable-ai/trureact-templates",
+      "description": "React Generic Starter"
+    }
+  ]
+}
