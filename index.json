@@ -1,10 +1,10 @@
 {
-  "generated": "2026-08-06T07:35:04Z",
+  "generated": "2026-08-06T07:48:46Z",
   "starters": [
     {
       "name": "truchat",
       "repo": "trustable-ai/truchat",
-      "templates": "trustable-ai/templates",
+      "templates": "trustable-ai/truchat-templates",
       "description": "AI chat UI with RAG"
     },
     {
