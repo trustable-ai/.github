@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-06T07:48:46Z",
+  "generated": "2026-08-11T12:25:20Z",
   "starters": [
     {
       "name": "truchat",
@@ -8,10 +8,10 @@
       "description": "AI chat UI with RAG"
     },
     {
-      "name": "truingest",
-      "repo": "trustable-ai/truingest",
-      "templates": "trustable-ai/templates",
-      "description": "ingest documents for rag"
+      "name": "trudemo",
+      "repo": "trustable-ai/trudemo",
+      "templates": "trustable-ai/trudemo-templates",
+      "description": "Collection of Demos"
     },
     {
       "name": "trureact",
