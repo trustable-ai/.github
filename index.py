@@ -5,8 +5,19 @@
 
 An application starter is a public repository of the trustable-ai organization
 whose GitHub description begins with "Trustable:". The text after the marker
-carries optional <key>=<value> parameters (currently only templates=) which are
-stripped from the human-readable description.
+carries <key>=<value> parameters (currently only templates=) which are stripped
+from the human-readable description. Only a repository with a usable templates=
+is a starter; one carrying the marker without it contributes applications only.
+
+The repository holding the applications — the templates repository of a starter,
+or the marked repository itself when it has no templates= — may publish an
+_index.md listing them, one per line:
+
+    - [<name>](<file>.md) <description>
+
+Those lines become the "applications" object, grouped under the first "# "
+heading of the file they came from, with an icon URL derived from the .md path
+by swapping the extension for .png. Missing icons are warned about, not fatal.
 
 Trustable reads the published index.json directly over raw.githubusercontent.com
 and never calls the GitHub API. This script is the only thing that talks to the
@@ -26,12 +37,20 @@ import os
 import re
 import subprocess
 import sys
+import urllib.error
+import urllib.request
 from datetime import datetime, timezone
 
 ORG = "trustable-ai"
-DEFAULT_TEMPLATES = "trustable-ai/templates"
 MARKER = "trustable:"
 INDEX_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "index.json")
+
+RAW_BASE = "https://raw.githubusercontent.com/{repo}/refs/heads/main/{path}"
+APPLICATION_INDEX = "_index.md"
+
+# Convention for a marked repository that carries no templates=: its
+# applications live in a sibling repository with this suffix.
+TEMPLATES_SUFFIX = "-templates"
 
 # <key>=<value> tokens carried in the description. Values are unquoted and
 # whitespace-delimited, which is all a GitHub description realistically holds.
@@ -39,6 +58,13 @@ KEY_VALUE = re.compile(r"\b([A-Za-z][A-Za-z0-9_-]*)=(\S+)")
 
 # Same shape trustable-app accepts for notebook.repository: owner/repository.
 REPO_SEGMENT = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
+
+# One application per line: "- [<name>](<file>.md) <description>". The
+# description is optional; anything else in the file is ignored.
+APPLICATION_LINE = re.compile(r"^\s*[-*]\s*\[([^\]]+)\]\(([^)\s]+\.md)\)\s*(.*)$")
+
+# The group name is the first top-level "# " heading of an _index.md.
+GROUP_HEADING = re.compile(r"^#\s+(.*\S)\s*$")
 
 
 def run(args):
@@ -53,7 +79,7 @@ def normalize_templates(value):
     """Normalize a templates= value to owner/repository.
 
     Accepts a bare owner/repo or a full GitHub URL. Returns None when the value
-    cannot be understood, so the caller can fall back to the default.
+    cannot be understood, which disqualifies the repository as a starter.
     """
     value = (value or "").strip()
     for prefix in ("https://github.com/", "http://github.com/"):
@@ -69,6 +95,65 @@ def normalize_templates(value):
     if len(parts) != 2 or not all(REPO_SEGMENT.match(part) for part in parts):
         return None
     return f"{parts[0]}/{parts[1]}"
+
+
+def raw_url(repo, path):
+    """URL of a file on the main branch of repo, as raw.githubusercontent.com."""
+    return RAW_BASE.format(repo=repo, path=path.lstrip("/"))
+
+
+def fetch_raw(url):
+    """Fetch a raw file, returning None when it is not published."""
+    try:
+        with urllib.request.urlopen(url, timeout=30) as response:
+            return response.read().decode("utf-8", errors="replace")
+    except urllib.error.HTTPError as error:
+        if error.code == 404:
+            return None
+        sys.exit(f"error: GET {url} failed: {error.code} {error.reason}")
+    except urllib.error.URLError as error:
+        sys.exit(f"error: GET {url} failed: {error.reason}")
+
+
+def raw_exists(url):
+    """Whether a raw URL is published, via HEAD so no body is downloaded.
+
+    A network failure is reported as missing rather than fatal: this only
+    drives a warning, and it must not block regenerating the index.
+    """
+    request = urllib.request.Request(url, method="HEAD")
+    try:
+        with urllib.request.urlopen(request, timeout=30):
+            return True
+    except (urllib.error.URLError, OSError):
+        return False
+
+
+def parse_applications(text, starter_repo, templates_repo):
+    """Parse a templates _index.md into (group, applications).
+
+    The group is the first "# " heading with the marker removed; it is None
+    when the file has none. The icon is the .md path with the extension swapped
+    for .png, resolved against the templates repository.
+    """
+    group = None
+    applications = []
+    for line in (text or "").splitlines():
+        if group is None:
+            heading = GROUP_HEADING.match(line)
+            if heading:
+                group = " ".join(heading.group(1).split()) or None
+        match = APPLICATION_LINE.match(line)
+        if not match:
+            continue
+        name, path, description = match.groups()
+        applications.append({
+            "name": " ".join(name.split()),
+            "repo": starter_repo,
+            "icon": raw_url(templates_repo, path[: -len(".md")] + ".png"),
+            "description": " ".join(description.split()),
+        })
+    return group, applications
 
 
 def parse_description(description):
@@ -109,7 +194,22 @@ def fetch_repositories():
 
 
 def build_starters(repositories):
+    """Build the starter list and the applications each one's templates offer.
+
+    A repository with a usable templates= is a starter, and its applications
+    come from the templates repository. A repository carrying the marker
+    *without* templates= is not a starter but still contributes applications,
+    read from the conventional <name>-templates repository and falling back to
+    the repository itself — that is how a plain collection of applications is
+    published without offering a starter.
+
+    A repository whose _index.md is absent contributes no applications.
+
+    Applications are grouped under the first "# " heading of the _index.md they
+    came from. Two repositories sharing a heading share the group.
+    """
     starters = []
+    groups = {}
     for repo in repositories:
         if repo.get("private") or repo.get("archived") or repo.get("disabled"):
             continue
@@ -120,15 +220,55 @@ def build_starters(repositories):
         full_name = (repo.get("full_name") or "").strip() or f"{ORG}/{name}"
         if not name:
             continue
-        templates = normalize_templates(params.get("templates")) or DEFAULT_TEMPLATES
-        starters.append({
-            "name": name,
-            "repo": full_name,
-            "templates": templates,
-            "description": text,
-        })
+        templates = normalize_templates(params.get("templates"))
+        if templates:
+            starters.append({
+                "name": name,
+                "repo": full_name,
+                "templates": templates,
+                "description": text,
+            })
+        else:
+            print(f"  {full_name}: no templates=, applications only",
+                  file=sys.stderr)
+        # Without templates= the applications live in the conventional
+        # <name>-templates repository, falling back to the repository itself.
+        source = templates or f"{full_name}{TEMPLATES_SUFFIX}"
+        listing = fetch_raw(raw_url(source, APPLICATION_INDEX))
+        if listing is None and not templates:
+            source = full_name
+            listing = fetch_raw(raw_url(source, APPLICATION_INDEX))
+        if listing is None:
+            print(f"  {source}: no {APPLICATION_INDEX}", file=sys.stderr)
+            continue
+        group, entries = parse_applications(listing, full_name, source)
+        if entries and group is None:
+            group = name
+            print(f"  {source}: no '# ' heading, grouping under {group}",
+                  file=sys.stderr)
+        for entry in entries:
+            groups.setdefault(group, []).append(entry)
     starters.sort(key=lambda item: item["name"])
-    return starters
+    applications = {
+        group: sorted(entries, key=lambda item: (item["repo"], item["name"]))
+        for group, entries in sorted(groups.items())
+    }
+    return starters, applications
+
+
+def check_icons(applications):
+    """Warn about applications whose icon is not published, across all groups.
+
+    The icon URL is a convention derived from the .md path, so a missing image
+    is a warning and not an error: the entry stays in the index and the image
+    can be added to the templates repository later.
+    """
+    missing = [app for entries in applications.values() for app in entries
+               if not raw_exists(app["icon"])]
+    for app in missing:
+        print(f"warning: {app['repo']}: no icon for {app['name']} — "
+              f"{app['icon']}", file=sys.stderr)
+    return missing
 
 
 def git(args, cwd):
@@ -143,13 +283,14 @@ def main():
     args = parser.parse_args()
 
     repositories = fetch_repositories()
-    starters = build_starters(repositories)
+    starters, applications = build_starters(repositories)
     if not starters:
         sys.exit("error: no starters found — refusing to publish an empty index")
 
     index = {
         "generated": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "starters": starters,
+        "applications": applications,
     }
 
     previous = ""
@@ -161,22 +302,36 @@ def main():
     with open(INDEX_PATH, "w", encoding="utf-8") as handle:
         handle.write(payload)
 
-    print(f"{len(starters)} starters written to {INDEX_PATH}")
+    total = sum(len(entries) for entries in applications.values())
+    print(f"{len(starters)} starters, {total} applications in "
+          f"{len(applications)} groups written to {INDEX_PATH}")
     for starter in starters:
         print(f"  {starter['name']:<16} {starter['repo']:<32} "
               f"templates={starter['templates']}")
+    missing_icons = check_icons(applications)
+    missing_urls = {app["icon"] for app in missing_icons}
+    for group, entries in applications.items():
+        print(f"  {group}:")
+        for entry in entries:
+            mark = " (no icon)" if entry["icon"] in missing_urls else ""
+            print(f"    {entry['name']:<24} {entry['repo']:<32} "
+                  f"{entry['description']}{mark}")
+    if missing_icons:
+        print(f"\n{len(missing_icons)} of {total} applications "
+              f"have no icon published.")
 
-    # "generated" changes on every run, so compare the starter list itself to
-    # decide whether there is anything worth publishing.
-    def starters_of(text):
+    # "generated" changes on every run, so compare the content itself to decide
+    # whether there is anything worth publishing.
+    def content_of(text):
         try:
-            return json.loads(text).get("starters")
+            document = json.loads(text)
+            return document.get("starters"), document.get("applications")
         except (ValueError, AttributeError):
             return None
 
-    unchanged = starters_of(previous) == starters
+    unchanged = content_of(previous) == (starters, applications)
     if unchanged:
-        print("\nStarter list unchanged.")
+        print("\nStarter and application lists unchanged.")
     if not args.push:
         print("\nNot pushed. Re-run with --push to publish.")
         return
