@@ -13,11 +13,13 @@ The repository holding the applications — the templates repository of a starte
 or the marked repository itself when it has no templates= — may publish an
 _index.md listing them, one per line:
 
-    - [<name>](<file>.md) <description>
+    - [<name>](<template>.md) <description>
 
 Those lines become the "applications" object, grouped under the first "# "
-heading of the file they came from, with an icon URL derived from the .md path
-by swapping the extension for .png. Missing icons are warned about, not fatal.
+heading of the file they came from. The linked file names the template, so the
+application's repository is https://github.com/trustable-ai/<template> and its
+icon URL is the same path with the extension swapped for .png. A repository
+that does not exist and a missing icon are both warned about, not fatal.
 
 Trustable reads the published index.json directly over raw.githubusercontent.com
 and never calls the GitHub API. This script is the only thing that talks to the
@@ -47,6 +49,10 @@ INDEX_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "index.jso
 
 RAW_BASE = "https://raw.githubusercontent.com/{repo}/refs/heads/main/{path}"
 APPLICATION_INDEX = "_index.md"
+
+# An application's own repository, named by the template linked in _index.md:
+# "- [Tetris](tetris.md)" lives in https://github.com/trustable-ai/tetris.
+REPO_BASE = "https://github.com/{org}/{template}"
 
 # Convention for a marked repository that carries no templates=: its
 # applications live in a sibling repository with this suffix.
@@ -129,12 +135,36 @@ def raw_exists(url):
         return False
 
 
-def parse_applications(text, starter_repo, templates_repo):
+def repo_exists(repo):
+    """Whether owner/repository exists on GitHub, via the gh CLI.
+
+    An anonymous HEAD on github.com cannot tell a missing repository from a
+    private one, and both matter here: an application whose repository is
+    private is as unusable to a user as one that was never created. `gh` is
+    already a dependency and carries the maintainer's credentials, so it sees
+    private repositories of the organization too.
+
+    Returns True when the repository exists, False on a definite 404, and None
+    when the answer is unknown (gh missing, not authenticated, network down) so
+    a broken environment produces no misleading "does not exist" warnings.
+    """
+    result = subprocess.run(["gh", "api", f"repos/{repo}"],
+                            capture_output=True, text=True)
+    if result.returncode == 0:
+        return True
+    if "404" in result.stderr or "Not Found" in result.stderr:
+        return False
+    return None
+
+
+def parse_applications(text, templates_repo):
     """Parse a templates _index.md into (group, applications).
 
     The group is the first "# " heading with the marker removed; it is None
-    when the file has none. The icon is the .md path with the extension swapped
-    for .png, resolved against the templates repository.
+    when the file has none. The linked "<template>.md" names the template: the
+    application's repository is https://github.com/<ORG>/<template>, and the
+    icon is the same path with the extension swapped for .png, resolved against
+    the templates repository.
     """
     group = None
     applications = []
@@ -147,9 +177,10 @@ def parse_applications(text, starter_repo, templates_repo):
         if not match:
             continue
         name, path, description = match.groups()
+        template = os.path.basename(path)[: -len(".md")]
         applications.append({
             "name": " ".join(name.split()),
-            "repo": starter_repo,
+            "repo": REPO_BASE.format(org=ORG, template=template),
             "icon": raw_url(templates_repo, path[: -len(".md")] + ".png"),
             "description": " ".join(description.split()),
         })
@@ -241,7 +272,7 @@ def build_starters(repositories):
         if listing is None:
             print(f"  {source}: no {APPLICATION_INDEX}", file=sys.stderr)
             continue
-        group, entries = parse_applications(listing, full_name, source)
+        group, entries = parse_applications(listing, source)
         if entries and group is None:
             group = name
             print(f"  {source}: no '# ' heading, grouping under {group}",
@@ -268,6 +299,35 @@ def check_icons(applications):
     for app in missing:
         print(f"warning: {app['repo']}: no icon for {app['name']} — "
               f"{app['icon']}", file=sys.stderr)
+    return missing
+
+
+def check_repositories(applications):
+    """Warn about applications whose repository does not exist, across all groups.
+
+    The repository is a convention derived from the template name linked in
+    _index.md, so a typo there — or a template listed before its repository was
+    created — points at nothing. Like a missing icon this is a warning and not
+    an error: the entry stays in the index and the repository can be created
+    later without regenerating anything.
+
+    Each distinct repository is probed once, since the same template may be
+    listed by more than one _index.md.
+    """
+    urls = sorted({app["repo"] for entries in applications.values()
+                   for app in entries})
+    prefix = "https://github.com/"
+    verdicts = {url: repo_exists(url[len(prefix):]) for url in urls}
+    missing = {url for url, exists in verdicts.items() if exists is False}
+    unknown = {url for url, exists in verdicts.items() if exists is None}
+    for entries in applications.values():
+        for app in entries:
+            if app["repo"] in missing:
+                print(f"warning: no repository for {app['name']} — "
+                      f"{app['repo']}", file=sys.stderr)
+    if unknown:
+        print(f"warning: could not check {len(unknown)} repositories "
+              f"(is gh authenticated?)", file=sys.stderr)
     return missing
 
 
@@ -310,15 +370,25 @@ def main():
               f"templates={starter['templates']}")
     missing_icons = check_icons(applications)
     missing_urls = {app["icon"] for app in missing_icons}
+    missing_repos = check_repositories(applications)
     for group, entries in applications.items():
         print(f"  {group}:")
         for entry in entries:
-            mark = " (no icon)" if entry["icon"] in missing_urls else ""
-            print(f"    {entry['name']:<24} {entry['repo']:<32} "
-                  f"{entry['description']}{mark}")
+            marks = ""
+            if entry["repo"] in missing_repos:
+                marks += " (no repo)"
+            if entry["icon"] in missing_urls:
+                marks += " (no icon)"
+            print(f"    {entry['name']:<24} {entry['repo']:<48} "
+                  f"{entry['description']}{marks}")
     if missing_icons:
         print(f"\n{len(missing_icons)} of {total} applications "
               f"have no icon published.")
+    if missing_repos:
+        broken = sum(1 for entries in applications.values() for app in entries
+                     if app["repo"] in missing_repos)
+        print(f"{broken} of {total} applications point at a repository "
+              f"that does not exist.")
 
     # "generated" changes on every run, so compare the content itself to decide
     # whether there is anything worth publishing.
