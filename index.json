@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-12T12:57:03Z",
+  "generated": "2026-08-12T13:08:41Z",
   "starters": [
     {
       "name": "truchat",
@@ -23,31 +23,36 @@
   "applications": {
     "Apps": [
       {
-        "name": "API Status Monitor",
+        "name": "apistatusmonitor",
+        "title": "API Status Monitor",
         "repo": "https://github.com/trustable-ai/apistatusmonitor",
         "icon": "https://raw.githubusercontent.com/trustable-ai/trureact-templates/refs/heads/main/apistatusmonitor.png",
         "description": "API Status Mpnitor"
       },
       {
-        "name": "App Suite",
+        "name": "appsuite",
+        "title": "App Suite",
         "repo": "https://github.com/trustable-ai/appsuite",
         "icon": "https://raw.githubusercontent.com/trustable-ai/trureact-templates/refs/heads/main/appsuite.png",
         "description": "Simple Productivity App suite"
       },
       {
-        "name": "Mini CRM",
+        "name": "minicrm",
+        "title": "Mini CRM",
         "repo": "https://github.com/trustable-ai/minicrm",
         "icon": "https://raw.githubusercontent.com/trustable-ai/trureact-templates/refs/heads/main/minicrm.png",
         "description": "Mini Customer Relation Manager"
       },
       {
-        "name": "Project Dashboard",
+        "name": "projectdashboard",
+        "title": "Project Dashboard",
         "repo": "https://github.com/trustable-ai/projectdashboard",
         "icon": "https://raw.githubusercontent.com/trustable-ai/trureact-templates/refs/heads/main/projectdashboard.png",
         "description": "Project Dashboard"
       },
       {
-        "name": "Security Check",
+        "name": "securitycheck",
+        "title": "Security Check",
         "repo": "https://github.com/trustable-ai/securitycheck",
         "icon": "https://raw.githubusercontent.com/trustable-ai/trureact-templates/refs/heads/main/securitycheck.png",
         "description": "Security Check"
@@ -55,19 +60,22 @@
     ],
     "Chat": [
       {
-        "name": "AI Database Manager",
+        "name": "dbmanagerai",
+        "title": "AI Database Manager",
         "repo": "https://github.com/trustable-ai/dbmanagerai",
         "icon": "https://raw.githubusercontent.com/trustable-ai/truchat-templates/refs/heads/main/dbmanagerai.png",
         "description": "Manage Databases with AI"
       },
       {
-        "name": "AI Document Manager",
+        "name": "documentchatai",
+        "title": "AI Document Manager",
         "repo": "https://github.com/trustable-ai/documentchatai",
         "icon": "https://raw.githubusercontent.com/trustable-ai/truchat-templates/refs/heads/main/documentchatai.png",
         "description": "Manage Documents with AI"
       },
       {
-        "name": "AI Email Manager",
+        "name": "emailmanagerai",
+        "title": "AI Email Manager",
         "repo": "https://github.com/trustable-ai/emailmanagerai",
         "icon": "https://raw.githubusercontent.com/trustable-ai/truchat-templates/refs/heads/main/emailmanagerai.png",
         "description": "Manager Email with AI"
@@ -75,51 +83,59 @@
     ],
     "Demo": [
       {
-        "name": "Solar System",
-        "repo": "https://github.com/trustable-ai/solarsystem",
-        "icon": "https://raw.githubusercontent.com/trustable-ai/trudemo-templates/refs/heads/main/solarsystem.png",
-        "description": "Solar System Simulation"
-      },
-      {
-        "name": "Tetris",
-        "repo": "https://github.com/trustable-ai/tetris",
-        "icon": "https://raw.githubusercontent.com/trustable-ai/trudemo-templates/refs/heads/main/tetris.png",
-        "description": "Tetris Game"
-      },
-      {
-        "name": "AI CRM",
+        "name": "truaicrm",
+        "title": "AI CRM",
         "repo": "https://github.com/trustable-ai/truaicrm",
         "icon": "https://raw.githubusercontent.com/trustable-ai/trudemo-templates/refs/heads/main/truaicrm.png",
         "description": "AI CRM"
       },
       {
-        "name": "Kubernetes Manager",
+        "name": "truk8s",
+        "title": "Kubernetes Manager",
         "repo": "https://github.com/trustable-ai/truk8s",
         "icon": "https://raw.githubusercontent.com/trustable-ai/trudemo-templates/refs/heads/main/truk8s.png",
         "description": "Kubernetes Manager"
+      },
+      {
+        "name": "solarsystem",
+        "title": "Solar System",
+        "repo": "https://github.com/trustable-ai/solarsystem",
+        "icon": "https://raw.githubusercontent.com/trustable-ai/trudemo-templates/refs/heads/main/solarsystem.png",
+        "description": "Solar System Simulation"
+      },
+      {
+        "name": "tetris",
+        "title": "Tetris",
+        "repo": "https://github.com/trustable-ai/tetris",
+        "icon": "https://raw.githubusercontent.com/trustable-ai/trudemo-templates/refs/heads/main/tetris.png",
+        "description": "Tetris Game"
       }
     ],
     "Utilities": [
       {
-        "name": "JSON Formatter",
-        "repo": "https://github.com/trustable-ai/jsonformatter",
-        "icon": "https://raw.githubusercontent.com/trustable-ai/trutil-templates/refs/heads/main/jsonformatter.png",
-        "description": "JSON Formatter"
-      },
-      {
-        "name": "Document Ingest",
+        "name": "truingest",
+        "title": "Document Ingest",
         "repo": "https://github.com/trustable-ai/truingest",
         "icon": "https://raw.githubusercontent.com/trustable-ai/trutil-templates/refs/heads/main/truingest.png",
         "description": "Document Ingestion"
       },
       {
-        "name": "Kubernetes Manager",
+        "name": "jsonformatter",
+        "title": "JSON Formatter",
+        "repo": "https://github.com/trustable-ai/jsonformatter",
+        "icon": "https://raw.githubusercontent.com/trustable-ai/trutil-templates/refs/heads/main/jsonformatter.png",
+        "description": "JSON Formatter"
+      },
+      {
+        "name": "truk8s",
+        "title": "Kubernetes Manager",
         "repo": "https://github.com/trustable-ai/truk8s",
         "icon": "https://raw.githubusercontent.com/trustable-ai/trutil-templates/refs/heads/main/truk8s.png",
         "description": "Kubernetes Manager"
       },
       {
-        "name": "URL Metadata",
+        "name": "urlmetadata",
+        "title": "URL Metadata",
         "repo": "https://github.com/trustable-ai/urlmetadata",
         "icon": "https://raw.githubusercontent.com/trustable-ai/trutil-templates/refs/heads/main/urlmetadata.png",
         "description": "URL MetaData"

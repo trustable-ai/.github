@@ -13,12 +13,13 @@ The repository holding the applications — the templates repository of a starte
 or the marked repository itself when it has no templates= — may publish an
 _index.md listing them, one per line:
 
-    - [<name>](<template>.md) <description>
+    - [<title>](<template>.md) <description>
 
 Those lines become the "applications" object, grouped under the first "# "
-heading of the file they came from. The linked file names the template, so the
-application's repository is https://github.com/trustable-ai/<template> and its
-icon URL is the same path with the extension swapped for .png. A repository
+heading of the file they came from. The linked file names the template, which
+becomes the entry's "name" and its repository
+https://github.com/trustable-ai/<template>; the link text is the "title" and the
+icon URL is the linked path with the extension swapped for .png. A repository
 that does not exist and a missing icon are both warned about, not fatal.
 
 Trustable reads the published index.json directly over raw.githubusercontent.com
@@ -58,9 +59,10 @@ REPO_BASE = "https://github.com/{org}/{template}"
 # applications live in a sibling repository with this suffix.
 TEMPLATES_SUFFIX = "-templates"
 
-# <key>=<value> tokens carried in the description. Values are unquoted and
-# whitespace-delimited, which is all a GitHub description realistically holds.
-KEY_VALUE = re.compile(r"\b([A-Za-z][A-Za-z0-9_-]*)=(\S+)")
+# <key>=<value> tokens carried in the description. A bare value is
+# whitespace-delimited; a "quoted" one may contain spaces, so a parameter is not
+# limited to single-word values.
+KEY_VALUE = re.compile(r"""\b([A-Za-z][A-Za-z0-9_-]*)=(?:"([^"]*)"|(\S+))""")
 
 # Same shape trustable-app accepts for notebook.repository: owner/repository.
 REPO_SEGMENT = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
@@ -161,10 +163,14 @@ def parse_applications(text, templates_repo):
     """Parse a templates _index.md into (group, applications).
 
     The group is the first "# " heading with the marker removed; it is None
-    when the file has none. The linked "<template>.md" names the template: the
-    application's repository is https://github.com/<ORG>/<template>, and the
-    icon is the same path with the extension swapped for .png, resolved against
-    the templates repository.
+    when the file has none.
+
+    A line "- [<title>](<template>.md) <description>" yields all three fields:
+    <template> is the application's identity — it names both "name" and the
+    repository https://github.com/<ORG>/<template> — while the link text is the
+    human-readable "title" and the trailing prose the "description". The icon is
+    the linked path with the extension swapped for .png, resolved against the
+    templates repository.
     """
     group = None
     applications = []
@@ -176,10 +182,11 @@ def parse_applications(text, templates_repo):
         match = APPLICATION_LINE.match(line)
         if not match:
             continue
-        name, path, description = match.groups()
+        title, path, description = match.groups()
         template = os.path.basename(path)[: -len(".md")]
         applications.append({
-            "name": " ".join(name.split()),
+            "name": template,
+            "title": " ".join(title.split()),
             "repo": REPO_BASE.format(org=ORG, template=template),
             "icon": raw_url(templates_repo, path[: -len(".md")] + ".png"),
             "description": " ".join(description.split()),
@@ -197,7 +204,9 @@ def parse_description(description):
     if trimmed[: len(MARKER)].lower() != MARKER:
         return None, None
     rest = trimmed[len(MARKER):]
-    params = {key.lower(): value for key, value in KEY_VALUE.findall(rest)}
+    # Only one of the two value groups matches; the other is the empty string.
+    params = {key.lower(): quoted or bare
+              for key, quoted, bare in KEY_VALUE.findall(rest)}
     text = " ".join(KEY_VALUE.sub(" ", rest).split())
     return text, params
 
@@ -281,7 +290,7 @@ def build_starters(repositories):
             groups.setdefault(group, []).append(entry)
     starters.sort(key=lambda item: item["name"])
     applications = {
-        group: sorted(entries, key=lambda item: (item["repo"], item["name"]))
+        group: sorted(entries, key=lambda item: (item["title"], item["name"]))
         for group, entries in sorted(groups.items())
     }
     return starters, applications
@@ -297,7 +306,7 @@ def check_icons(applications):
     missing = [app for entries in applications.values() for app in entries
                if not raw_exists(app["icon"])]
     for app in missing:
-        print(f"warning: {app['repo']}: no icon for {app['name']} — "
+        print(f"warning: {app['repo']}: no icon for {app['title']} — "
               f"{app['icon']}", file=sys.stderr)
     return missing
 
@@ -323,7 +332,7 @@ def check_repositories(applications):
     for entries in applications.values():
         for app in entries:
             if app["repo"] in missing:
-                print(f"warning: no repository for {app['name']} — "
+                print(f"warning: no repository for {app['title']} — "
                       f"{app['repo']}", file=sys.stderr)
     if unknown:
         print(f"warning: could not check {len(unknown)} repositories "
@@ -379,7 +388,7 @@ def main():
                 marks += " (no repo)"
             if entry["icon"] in missing_urls:
                 marks += " (no icon)"
-            print(f"    {entry['name']:<24} {entry['repo']:<48} "
+            print(f"    {entry['name']:<20} {entry['title']:<24} "
                   f"{entry['description']}{marks}")
     if missing_icons:
         print(f"\n{len(missing_icons)} of {total} applications "
