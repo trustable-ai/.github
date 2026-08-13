@@ -19,8 +19,10 @@ Those lines become the "applications" object, grouped under the first "# "
 heading of the file they came from. The linked file names the template, which
 becomes the entry's "name" and its repository
 https://github.com/trustable-ai/<template>; the link text is the "title" and the
-icon URL is the linked path with the extension swapped for .png. A repository
-that does not exist and a missing icon are both warned about, not fatal.
+icon is the screenshot.png that same repository publishes,
+https://raw.githubusercontent.com/trustable-ai/<template>/refs/heads/main/screenshot.png.
+A repository that does not exist and a missing icon are both warned about, not
+fatal.
 
 Trustable reads the published index.json directly over raw.githubusercontent.com
 and never calls the GitHub API. This script is the only thing that talks to the
@@ -50,6 +52,11 @@ INDEX_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "index.jso
 
 RAW_BASE = "https://raw.githubusercontent.com/{repo}/refs/heads/main/{path}"
 APPLICATION_INDEX = "_index.md"
+
+# An application's icon, published by the application's own repository. This is
+# the file ./screenshot.sh stages in a workbench, so an application ships its
+# own image and the templates repository holds none.
+APPLICATION_SCREENSHOT = "screenshot.png"
 
 # An application's own repository, named by the template linked in _index.md:
 # "- [Tetris](tetris.md)" lives in https://github.com/trustable-ai/tetris.
@@ -159,7 +166,7 @@ def repo_exists(repo):
     return None
 
 
-def parse_applications(text, templates_repo):
+def parse_applications(text):
     """Parse a templates _index.md into (group, applications).
 
     The group is the first "# " heading with the marker removed; it is None
@@ -169,8 +176,9 @@ def parse_applications(text, templates_repo):
     <template> is the application's identity — it names both "name" and the
     repository https://github.com/<ORG>/<template> — while the link text is the
     human-readable "title" and the trailing prose the "description". The icon is
-    the linked path with the extension swapped for .png, resolved against the
-    templates repository.
+    the screenshot.png published by that same application repository, which is
+    what ./screenshot.sh stages, so an application carries its own image
+    instead of the templates repository holding one per entry.
     """
     group = None
     applications = []
@@ -188,7 +196,7 @@ def parse_applications(text, templates_repo):
             "name": template,
             "title": " ".join(title.split()),
             "repo": REPO_BASE.format(org=ORG, template=template),
-            "icon": raw_url(templates_repo, path[: -len(".md")] + ".png"),
+            "icon": raw_url(f"{ORG}/{template}", APPLICATION_SCREENSHOT),
             "description": " ".join(description.split()),
         })
     return group, applications
@@ -281,7 +289,7 @@ def build_starters(repositories):
         if listing is None:
             print(f"  {source}: no {APPLICATION_INDEX}", file=sys.stderr)
             continue
-        group, entries = parse_applications(listing, source)
+        group, entries = parse_applications(listing)
         if entries and group is None:
             group = name
             print(f"  {source}: no '# ' heading, grouping under {group}",
@@ -299,9 +307,9 @@ def build_starters(repositories):
 def check_icons(applications):
     """Warn about applications whose icon is not published, across all groups.
 
-    The icon URL is a convention derived from the .md path, so a missing image
-    is a warning and not an error: the entry stays in the index and the image
-    can be added to the templates repository later.
+    The icon URL is a convention — screenshot.png in the application's own
+    repository — so a missing image is a warning and not an error: the entry
+    stays in the index and ./screenshot.sh can add the image later.
     """
     missing = [app for entries in applications.values() for app in entries
                if not raw_exists(app["icon"])]

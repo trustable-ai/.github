@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-13T13:25:17Z",
+  "generated": "2026-08-13T19:16:53Z",
   "starters": [
     {
       "name": "truchat",
@@ -26,21 +26,21 @@
         "name": "dbmanagerai",
         "title": "AI Database Manager",
         "repo": "https://github.com/trustable-ai/dbmanagerai",
-        "icon": "https://raw.githubusercontent.com/trustable-ai/truchat-templates/refs/heads/main/dbmanagerai.png",
+        "icon": "https://raw.githubusercontent.com/trustable-ai/dbmanagerai/refs/heads/main/screenshot.png",
         "description": "Manage Databases with AI"
       },
       {
         "name": "documentchatai",
         "title": "AI Document Manager",
         "repo": "https://github.com/trustable-ai/documentchatai",
-        "icon": "https://raw.githubusercontent.com/trustable-ai/truchat-templates/refs/heads/main/documentchatai.png",
+        "icon": "https://raw.githubusercontent.com/trustable-ai/documentchatai/refs/heads/main/screenshot.png",
         "description": "Manage Documents with AI"
       },
       {
         "name": "emailmanagerai",
         "title": "AI Email Manager",
         "repo": "https://github.com/trustable-ai/emailmanagerai",
-        "icon": "https://raw.githubusercontent.com/trustable-ai/truchat-templates/refs/heads/main/emailmanagerai.png",
+        "icon": "https://raw.githubusercontent.com/trustable-ai/emailmanagerai/refs/heads/main/screenshot.png",
         "description": "Manager Email with AI"
       }
     ],
@@ -49,21 +49,21 @@
         "name": "truaicrm",
         "title": "AI CRM",
         "repo": "https://github.com/trustable-ai/truaicrm",
-        "icon": "https://raw.githubusercontent.com/trustable-ai/trudemo-templates/refs/heads/main/truaicrm.png",
+        "icon": "https://raw.githubusercontent.com/trustable-ai/truaicrm/refs/heads/main/screenshot.png",
         "description": "AI CRM"
       },
       {
         "name": "truk8s",
         "title": "Kubernetes Manager",
         "repo": "https://github.com/trustable-ai/truk8s",
-        "icon": "https://raw.githubusercontent.com/trustable-ai/trudemo-templates/refs/heads/main/truk8s.png",
+        "icon": "https://raw.githubusercontent.com/trustable-ai/truk8s/refs/heads/main/screenshot.png",
         "description": "Kubernetes Manager"
       },
       {
         "name": "tetris",
         "title": "Tetris",
         "repo": "https://github.com/trustable-ai/tetris",
-        "icon": "https://raw.githubusercontent.com/trustable-ai/trudemo-templates/refs/heads/main/tetris.png",
+        "icon": "https://raw.githubusercontent.com/trustable-ai/tetris/refs/heads/main/screenshot.png",
         "description": "Tetris Game"
       }
     ],
@@ -72,28 +72,28 @@
         "name": "apistatusmonitor",
         "title": "API Status Monitor",
         "repo": "https://github.com/trustable-ai/apistatusmonitor",
-        "icon": "https://raw.githubusercontent.com/trustable-ai/trureact-templates/refs/heads/main/apistatusmonitor.png",
+        "icon": "https://raw.githubusercontent.com/trustable-ai/apistatusmonitor/refs/heads/main/screenshot.png",
         "description": "API Status Mpnitor"
       },
       {
         "name": "appsuite",
         "title": "App Suite",
         "repo": "https://github.com/trustable-ai/appsuite",
-        "icon": "https://raw.githubusercontent.com/trustable-ai/trureact-templates/refs/heads/main/appsuite.png",
+        "icon": "https://raw.githubusercontent.com/trustable-ai/appsuite/refs/heads/main/screenshot.png",
         "description": "Simple Productivity App suite"
       },
       {
         "name": "minicrm",
         "title": "Mini CRM",
         "repo": "https://github.com/trustable-ai/minicrm",
-        "icon": "https://raw.githubusercontent.com/trustable-ai/trureact-templates/refs/heads/main/minicrm.png",
+        "icon": "https://raw.githubusercontent.com/trustable-ai/minicrm/refs/heads/main/screenshot.png",
         "description": "Mini Customer Relation Manager"
       },
       {
         "name": "projectdashboard",
         "title": "Project Dashboard",
         "repo": "https://github.com/trustable-ai/projectdashboard",
-        "icon": "https://raw.githubusercontent.com/trustable-ai/trureact-templates/refs/heads/main/projectdashboard.png",
+        "icon": "https://raw.githubusercontent.com/trustable-ai/projectdashboard/refs/heads/main/screenshot.png",
         "description": "Project Dashboard"
       }
     ],
@@ -102,21 +102,21 @@
         "name": "truingest",
         "title": "Document Ingest",
         "repo": "https://github.com/trustable-ai/truingest",
-        "icon": "https://raw.githubusercontent.com/trustable-ai/trutil-templates/refs/heads/main/truingest.png",
+        "icon": "https://raw.githubusercontent.com/trustable-ai/truingest/refs/heads/main/screenshot.png",
         "description": "Document Ingestion"
       },
       {
         "name": "jsonformatter",
         "title": "JSON Formatter",
         "repo": "https://github.com/trustable-ai/jsonformatter",
-        "icon": "https://raw.githubusercontent.com/trustable-ai/trutil-templates/refs/heads/main/jsonformatter.png",
+        "icon": "https://raw.githubusercontent.com/trustable-ai/jsonformatter/refs/heads/main/screenshot.png",
         "description": "JSON Formatter"
       },
       {
         "name": "urlmetadata",
         "title": "URL Metadata",
         "repo": "https://github.com/trustable-ai/urlmetadata",
-        "icon": "https://raw.githubusercontent.com/trustable-ai/trutil-templates/refs/heads/main/urlmetadata.png",
+        "icon": "https://raw.githubusercontent.com/trustable-ai/urlmetadata/refs/heads/main/screenshot.png",
         "description": "URL MetaData"
       }
     ]
