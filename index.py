@@ -32,8 +32,9 @@ rate limit rather than the user's.
 Usage:
     ./index.py             # regenerate index.json and show the diff
 
-Regenerating only rewrites the file. Publishing it is the website's
-./publish.sh, which pushes it here and then pushes the site built from it.
+Regenerating only rewrites the file. Publishing is done by hand: commit and
+push it here first, then publish the website built from it — otherwise the
+site's submodule pointer names a commit GitHub does not have.
 
 See spec/15-starters.md in trustable-app.
 """
@@ -416,7 +417,7 @@ def main():
         print("\nStarter and application lists unchanged.")
     else:
         print("\nStarter or application lists changed — "
-              "publish with the website's ./publish.sh.")
+              "commit and push index.json, then publish the website.")
 
 
 if __name__ == "__main__":
