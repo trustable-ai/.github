@@ -31,7 +31,9 @@ rate limit rather than the user's.
 
 Usage:
     ./index.py             # regenerate index.json and show the diff
-    ./index.py --push      # also commit and push it to trustable-ai/.github
+
+Regenerating only rewrites the file. Publishing it is the website's
+./publish.sh, which pushes it here and then pushes the site built from it.
 
 See spec/15-starters.md in trustable-app.
 """
@@ -348,16 +350,10 @@ def check_repositories(applications):
     return missing
 
 
-def git(args, cwd):
-    return run(["git", "-C", cwd] + args)
-
-
 def main():
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--push", action="store_true",
-                        help="commit and push index.json to trustable-ai/.github")
-    args = parser.parse_args()
+    parser.parse_args()
 
     repositories = fetch_repositories()
     starters, applications = build_starters(repositories)
@@ -408,7 +404,7 @@ def main():
               f"that does not exist.")
 
     # "generated" changes on every run, so compare the content itself to decide
-    # whether there is anything worth publishing.
+    # whether anything worth publishing actually moved.
     def content_of(text):
         try:
             document = json.loads(text)
@@ -416,21 +412,11 @@ def main():
         except (ValueError, AttributeError):
             return None
 
-    unchanged = content_of(previous) == (starters, applications)
-    if unchanged:
+    if content_of(previous) == (starters, applications):
         print("\nStarter and application lists unchanged.")
-    if not args.push:
-        print("\nNot pushed. Re-run with --push to publish.")
-        return
-    if unchanged:
-        print("Nothing to push.")
-        return
-
-    repo_dir = os.path.dirname(INDEX_PATH)
-    git(["add", "index.json"], repo_dir)
-    git(["commit", "-m", "Update application starter index"], repo_dir)
-    git(["push"], repo_dir)
-    print("\nPushed to trustable-ai/.github.")
+    else:
+        print("\nStarter or application lists changed — "
+              "publish with the website's ./publish.sh.")
 
 
 if __name__ == "__main__":
