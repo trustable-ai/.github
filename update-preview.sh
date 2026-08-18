@@ -2,8 +2,7 @@
 sudo apt-get update && sudo apt-get -y install jq curl
 
 TOKEN=$(curl -s "https://ghcr.io/token?scope=repository:trustable-ai/trustable-app:pull&service=ghcr.io" | jq -r '.token')
-curl -s -H "Authorization: Bearer $TOKEN" "https://ghcr.io/v2/trustable-ai/trustable-app/tags/list" |\
-jq -r '.tags[] | select(startswith("trustable_"))' | awk -F_ '{ print $3 " " $0 }' | sort -r >/tmp/releases
+curl -s -H "Authorization: Bearer $TOKEN" "https://ghcr.io/v2/trustable-ai/trustable-app/tags/list" | jq -r '.tags[] | select(startswith("trustable_"))' | awk -F_ '{ print $3 " " $0 }' | sort -r >/tmp/releases
 CURRENT="$(head -1 /tmp/releases | awk ' {print $2}' )"
 
 IMAGE=ghcr.io/trustable-ai/trustable-app:$CURRENT
@@ -25,8 +24,12 @@ if [[ "$RUNNING" == "$CURRENT" ]]
 then echo "You are running the latest version available"
     curl -sL "${NOTIFY}up-to-date+$CURRENT" >/dev/null
 else echo "Updating"
+    sudo k3s ctr -n k8s.io images pull $IMAGE | grep -E 'Pulling|downloading'
     sudo k3s kubectl -n "$NAMESPACE" set image "statefulset/$STATEFULSET" "$CONTAINER=$IMAGE"
     sudo k3s kubectl -n "$NAMESPACE" rollout status "statefulset/$STATEFULSET"
+    while ! curl -s http://trustable.miniops.me | grep  '<title>Trustable</title>'
+    do echo "Waiting for Trustable: $((N++))"
+    done
     curl -sL "${NOTIFY}$RUNNING+to+$CURRENT" >/dev/null
 fi
 
