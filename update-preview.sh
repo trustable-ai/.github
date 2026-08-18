@@ -9,6 +9,7 @@ IMAGE=ghcr.io/trustable-ai/trustable-app:$CURRENT
 NAMESPACE=nuvolaris
 STATEFULSET=trustable
 CONTAINER=trustable
+INGRESS="$(hostname -I | awk '{print $1}')"
 NOTIFY="https://landing.nuvolaris.org/api/my/v1/notify?input="
 
 cd /tmp
@@ -27,7 +28,7 @@ else echo "Updating"
     sudo k3s ctr -n k8s.io images pull $IMAGE | grep -E 'Pulling|downloading'
     sudo k3s kubectl -n "$NAMESPACE" set image "statefulset/$STATEFULSET" "$CONTAINER=$IMAGE"
     sudo k3s kubectl -n "$NAMESPACE" rollout status "statefulset/$STATEFULSET"
-    while ! curl -s http://trustable.miniops.me | grep  '<title>Trustable</title>'
+    while ! curl -s -H 'Host: trustable.miniops.me' "http://$INGRESS" | grep  '<title>Trustable</title>'
     do echo "Waiting for Trustable: $((N++))"
     done
     curl -sL "${NOTIFY}$RUNNING+to+$CURRENT" >/dev/null
